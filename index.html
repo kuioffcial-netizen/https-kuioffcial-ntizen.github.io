@@ -2,168 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus AI Portal</title>
     <style>
-        :root {
-            --bg-color: #0a0a0e;
-            --panel-bg: rgba(20, 20, 28, 0.75);
-            --accent-glow: #00f2fe;
-            --accent-purple: #4facfe;
-            --text-main: #f1f5f9;
-            --border-color: rgba(0, 242, 254, 0.2);
-        }
-
-        [data-theme='bright'] {
-            --bg-color: #f8fafc;
-            --panel-bg: rgba(255, 255, 255, 0.9);
-            --accent-glow: #db2777;
-            --accent-purple: #9333ea;
-            --text-main: #0f172a;
-            --border-color: rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .portal-card {
-            width: 100%;
-            max-width: 480px;
-            background: var(--panel-bg);
-            backdrop-filter: blur(16px);
-            border-radius: 24px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-            padding: 35px;
-            box-sizing: border-box;
-            transition: all 0.3s;
-        }
-
-        #loginScreen { display: flex; flex-direction: column; align-items: center; text-align: center; }
-
-        .avatar-glow {
-            width: 80px; height: 80px;
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-glow));
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 2.2rem; margin-bottom: 20px;
-        }
-
-        .custom-input {
-            width: 100%; background: rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-            padding: 14px 16px; border-radius: 12px;
-            color: var(--text-main); font-size: 1rem; outline: none;
-        }
-
-        .action-btn {
-            width: 100%; background: var(--accent-glow);
-            color: white; border: none; padding: 14px;
-            font-weight: 700; border-radius: 12px; cursor: pointer;
-        }
-
-        #assistantScreen { 
-            max-width: 650px; height: 80vh; display: none; 
-            flex-direction: column; overflow: hidden;
-        }
-
-        .dash-header {
-            padding: 15px 25px; border-bottom: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        .chat-container { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-
-        .msg { max-width: 80%; padding: 12px 18px; border-radius: 16px; font-size: 0.95rem; }
-        .msg.user { background: var(--accent-purple); color: white; align-self: flex-end; }
-        .msg.bot { background: var(--border-color); align-self: flex-start; }
-
-        .msg-input-area { padding: 20px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; }
-        .send-icon-btn { background: var(--accent-glow); border: none; padding: 0 20px; border-radius: 12px; cursor: pointer; }
+        :root { --bg: #0a0a0e; --text: #f1f5f9; --accent: #00f2fe; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .chat-box { max-width: 600px; margin: auto; border: 1px solid #333; padding: 20px; border-radius: 10px; }
+        .msg { margin-bottom: 15px; padding: 10px; border-radius: 8px; }
+        .user { background: #4facfe; text-align: right; }
+        .bot { background: #222; }
     </style>
 </head>
 <body>
-
-    <div class="portal-card" id="loginScreen">
-        <div class="avatar-glow">👑</div>
-        <h2>Welcome to Nexus AI</h2>
-        <input type="text" id="usernameInput" class="custom-input" placeholder="Enter username...">
-        <button class="action-btn" onclick="handleLogin()" style="margin-top:20px">AUTHENTICATE</button>
+    <div class="chat-box" id="chat">
+        <div class="msg bot">Nexus AI Ready.</div>
     </div>
+    <input id="in" placeholder="Ask anything...">
+    <button onclick="send()">Send</button>
 
-    <div class="portal-card" id="assistantScreen">
-        <div class="dash-header">
-            <span id="displayUser" style="font-weight:bold">Admin</span>
-            <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; color:var(--accent-glow)">🎨 Theme</button>
-        </div>
-        <div class="chat-container" id="chatContainer">
-            <div class="msg bot">Initialization complete. Connected to Nexus AI logic.</div>
-        </div>
-        <div class="msg-input-area">
-            <input type="text" id="dashboardInput" class="custom-input" placeholder="Ask anything..." onkeypress="if(event.key==='Enter') processDashboardMessage()">
-            <button class="send-icon-btn" onclick="processDashboardMessage()">⚡</button>
-        </div>
-    </div>
+    <script>
+        async function send() {
+            const input = document.getElementById('in');
+            const chat = document.getElementById('chat');
+            const val = input.value;
+            
+            chat.innerHTML += `<div class="msg user">${val}</div>`;
+            input.value = '';
 
-<script>
-    window.onload = () => {
-        const savedTheme = localStorage.getItem('theme');
-        if(savedTheme) document.body.setAttribute('data-theme', savedTheme);
-        const savedChat = localStorage.getItem('nexusChatHistory');
-        if(savedChat) document.getElementById('chatContainer').innerHTML = savedChat;
-    };
-
-    function toggleTheme() {
-        const newTheme = document.body.getAttribute('data-theme') === 'bright' ? 'dark' : 'bright';
-        document.body.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-    }
-
-    function handleLogin() {
-        const name = document.getElementById('usernameInput').value;
-        if(name) {
-            document.getElementById('displayUser').innerText = name;
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('assistantScreen').style.display = 'flex';
+            try {
+                // This uses a public stable gateway
+                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(val)}`);
+                const reply = await res.text();
+                chat.innerHTML += `<div class="msg bot">${reply}</div>`;
+            } catch (e) {
+                chat.innerHTML += `<div class="msg bot">Error: Server busy. Try again.</div>`;
+            }
         }
-    }
-
-    async function processDashboardMessage() {
-        const input = document.getElementById('dashboardInput');
-        const val = input.value.trim();
-        if(!val) return;
-        
-        addMsg(val, 'user');
-        input.value = '';
-        
-        try {
-            // Using the updated /ai/ path for better stability
-            const res = await fetch(`https://text.pollinations.ai/ai/${encodeURIComponent(val)}?model=openai&system=${encodeURIComponent("You are Nexus AI, a sleek system dashboard assistant.")}`);
-            const reply = await res.text();
-            addMsg(reply.replace(/\n/g, "<br>"), 'bot');
-            localStorage.setItem('nexusChatHistory', document.getElementById('chatContainer').innerHTML);
-        } catch(e) { 
-            addMsg("System busy, please try again in a moment.", "bot"); 
-        }
-    }
-
-    function addMsg(text, sender) {
-        const div = document.createElement('div');
-        div.className = `msg ${sender}`;
-        div.innerHTML = text;
-        document.getElementById('chatContainer').appendChild(div);
-        document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
-    }
-</script>
+    </script>
 </body>
 </html>
