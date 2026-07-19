@@ -380,7 +380,6 @@
         inputEl.value = '';
 
         setTimeout(async () => {
-            // Put a loading placeholder
             const box = document.getElementById('chatContainer');
             const loadDiv = document.createElement('div');
             loadDiv.className = 'msg bot temp-loading';
@@ -390,9 +389,7 @@
 
             const reply = await handleBotLogic(val.toLowerCase(), val);
             
-            // Remove loading placeholder
             loadDiv.remove();
-            
             addMsg(reply, 'bot');
         }, 300);
     }
@@ -413,7 +410,6 @@
         const baseCommands = ['help', 'time', 'quote', 'calc', 'todo', 'weather'];
         const correctedKeyword = getClosestCommand(firstWord, baseCommands);
 
-        // Check command shortcuts first
         if (tokens.length === 1 && correctedKeyword === 'help') {
             return `Hello <b>${currentUserName}</b>, here are your utility shortcuts:<br>
                     • <b>time</b> - System clock<br>
@@ -456,10 +452,9 @@
             if (correctedSub === 'clear') { todos = []; return "🗑️ Checklist wiped."; }
         }
 
-        // --- GENERAL CHAT OVERLAY ENGINE ---
-        // If it isn't a direct utility command, send it straight to an AI logic container!
+        // --- GENERAL CHAT OVERLAY ENGINE WITH OPENAI METHOD PATH ---
         try {
-            const aiResponse = await fetch(`https://text.pollinations.ai/OpenAssistant?prompt=${encodeURIComponent(originalText)}`);
+            const aiResponse = await fetch(`https://text.pollinations.ai/openai?prompt=${encodeURIComponent(originalText)}`);
             if(!aiResponse.ok) throw new Error();
             let aiText = await aiResponse.text();
             return aiText.replace(/\n/g, "<br>");
