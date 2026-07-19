@@ -295,11 +295,11 @@
         </div>
         
         <div class="chat-container" id="chatContainer">
-            <div class="msg bot">Initialization complete. I am deployed online. Type <b>help</b> to review instructions!</div>
+            <div class="msg bot">Initialization complete. Connected to internet AI logic. Ask me anything!</div>
         </div>
         
         <div class="msg-input-area">
-            <input type="text" id="dashboardInput" class="custom-input" placeholder="Transmit a request..." onkeypress="handleDashKey(event)">
+            <input type="text" id="dashboardInput" class="custom-input" placeholder="Ask a question or talk to AI..." onkeypress="handleDashKey(event)">
             <button class="send-icon-btn" onclick="processDashboardMessage()">⚡</button>
         </div>
     </div>
@@ -360,7 +360,6 @@
         setTimeout(() => {
             loginCard.style.display = "none";
             dashCard.style.display = "flex";
-            
             setTimeout(() => {
                 dashCard.style.opacity = "1";
                 dashCard.style.transform = "translateY(0)";
@@ -381,7 +380,19 @@
         inputEl.value = '';
 
         setTimeout(async () => {
+            // Put a loading placeholder
+            const box = document.getElementById('chatContainer');
+            const loadDiv = document.createElement('div');
+            loadDiv.className = 'msg bot temp-loading';
+            loadDiv.innerHTML = '🧠 Thinking...';
+            box.appendChild(loadDiv);
+            box.scrollTop = box.scrollHeight;
+
             const reply = await handleBotLogic(val.toLowerCase(), val);
+            
+            // Remove loading placeholder
+            loadDiv.remove();
+            
             addMsg(reply, 'bot');
         }, 300);
     }
@@ -402,77 +413,59 @@
         const baseCommands = ['help', 'time', 'quote', 'calc', 'todo', 'weather'];
         const correctedKeyword = getClosestCommand(firstWord, baseCommands);
 
-        if (correctedKeyword === 'help') {
-            return `Hello <b>${currentUserName}</b>, here are your commands:<br>
-                    • <b>time</b> - System local clock<br>
-                    • <b>quote</b> - Insight line generator<br>
+        // Check command shortcuts first
+        if (tokens.length === 1 && correctedKeyword === 'help') {
+            return `Hello <b>${currentUserName}</b>, here are your utility shortcuts:<br>
+                    • <b>time</b> - System clock<br>
+                    • <b>quote</b> - Insight generator<br>
                     • <b>calc [math]</b> - e.g., <i>calc 50 * 2</i><br>
-                    • <b>todo add/list/clear</b> - Task storage<br>
-                    • <b>weather [city]</b> - Pull live weather data from the web!`;
+                    • <b>todo add/list/clear</b> - Checklist<br>
+                    • <b>weather [city]</b> - Live climate radar<br><br>
+                    Otherwise, just type normally to speak with the general AI!`;
         }
-
-        if (correctedKeyword === 'time') {
+        if (tokens.length === 1 && correctedKeyword === 'time') {
             return `Current session time: <b>${new Date().toLocaleString()}</b>`;
         }
-
-        if (correctedKeyword === 'quote') {
+        if (tokens.length === 1 && correctedKeyword === 'quote') {
             return `<i>"${quotes[Math.floor(Math.random() * quotes.length)]}"</i>`;
         }
-
-        if (correctedKeyword === 'calc') {
+        if (correctedKeyword === 'calc' && tokens.length > 1) {
             const expr = originalText.substring(tokens[0].length).trim();
-            if(!expr) return "Provide an equation. Example: <code>calc 25 + 75</code>";
-            try {
-                const res = new Function(`return ${expr}`)();
-                return `Calculation outcome: <b>${res}</b>`;
-            } catch(e) {
-                return "❌ Mathematical expression error.";
-            }
+            try { return `Result: <b>${new Function(`return ${expr}`)()}</b>`; } catch(e) { return "❌ Math syntax error."; }
         }
-
-        if (correctedKeyword === 'weather') {
+        if (correctedKeyword === 'weather' && tokens.length > 1) {
             const city = originalText.substring(tokens[0].length).trim();
-            if(!city) return "Please enter a city name! Example: <code>weather Paris</code>";
-            
             try {
                 const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
-                if(!response.ok) throw new Error();
                 const data = await response.json();
-                
-                const currentCondition = data.current_condition[0];
-                const tempC = currentCondition.temp_C;
-                const desc = currentCondition.weatherDesc[0].value;
-                
-                return `🌍 Live web data for <b>${city}</b>:<br>
-                        • Temperature: <b>${tempC}°C</b><br>
-                        • Conditions: <b>${desc}</b>`;
-            } catch(e) {
-                return `🌤️ *Couldn't contact server for "${city}". Formatted fallback:* Sky looks beautiful over there!`;
-            }
+                return `🌍 Web data for <b>${city}</b>: <b>${data.current_condition[0].temp_C}°C</b>, ${data.current_condition[0].weatherDesc[0].value}.`;
+            } catch(e) { return `🌤️ Weather network timeout for ${city}.`; }
         }
-
-        if (correctedKeyword === 'todo') {
+        if (correctedKeyword === 'todo' && tokens.length > 1) {
             const actionPart = cleanCmd.substring(firstWord.length).trim();
             const subTokens = actionPart.split(' ');
             const correctedSub = getClosestCommand(subTokens[0], ['add', 'list', 'clear']);
 
             if (correctedSub === 'add') {
-                const task = originalText.substring(firstWord.length + subTokens[0].length + 1).trim();
-                if(!task) return "Specify a task description.";
-                todos.push(task);
-                return `✅ Logged task: "${task}"`;
+                todos.push(originalText.substring(firstWord.length + subTokens[0].length + 1).trim());
+                return `✅ Task recorded.`;
             }
             if (correctedSub === 'list') {
-                if(todos.length === 0) return "Checklist clear.";
-                return `<b>Tasks:</b><br>` + todos.map((t, i) => `${i+1}. ${t}`).join('<br>');
+                return todos.length === 0 ? "Checklist empty." : `<b>Tasks:</b><br>` + todos.map((t, i) => `${i+1}. ${t}`).join('<br>');
             }
-            if (correctedSub === 'clear') {
-                todos = [];
-                return "🗑️ Task directory cleared.";
-            }
+            if (correctedSub === 'clear') { todos = []; return "🗑️ Checklist wiped."; }
         }
 
-        return "🤔 Request unrecognized. Transmit <b>help</b> for syntax guidance.";
+        // --- GENERAL CHAT OVERLAY ENGINE ---
+        // If it isn't a direct utility command, send it straight to an AI logic container!
+        try {
+            const aiResponse = await fetch(`https://text.pollinations.ai/OpenAssistant?prompt=${encodeURIComponent(originalText)}`);
+            if(!aiResponse.ok) throw new Error();
+            let aiText = await aiResponse.text();
+            return aiText.replace(/\n/g, "<br>");
+        } catch(err) {
+            return "🤔 Connection hiccup. Try typing your message again!";
+        }
     }
 </script>
 </body>
