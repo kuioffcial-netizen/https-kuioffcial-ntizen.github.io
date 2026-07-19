@@ -120,6 +120,39 @@
     ];
     let todos = [];
 
+    // Smart helper that catches spelling mistakes (Levenshtein Distance logic)
+    function getClosestCommand(inputWord, validCommands) {
+        let bestMatch = null;
+        let minDistance = 3; // Allows up to 2 typos
+
+        for (const cmd of validCommands) {
+            if (inputWord === cmd) return cmd; // Perfect match
+            
+            // Calculate differences between words
+            const track = Array(cmd.length + 1).fill(null).map(() => Array(inputWord.length + 1).fill(null));
+            for (let i = 0; i <= cmd.length; i += 1) track[i][0] = i;
+            for (let j = 0; j <= inputWord.length; j += 1) track[0][j] = j;
+            
+            for (let i = 1; i <= cmd.length; i += 1) {
+                for (let j = 1; j <= inputWord.length; j += 1) {
+                    const indicator = cmd[i - 1] === inputWord[j - 1] ? 0 : 1;
+                    track[i][j] = Math.min(
+                        track[i - 1][j] + 1,
+                        track[i][j - 1] + 1,
+                        track[i - 1][j - 1] + indicator
+                    );
+                }
+            }
+            
+            const distance = track[cmd.length][inputWord.length];
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestMatch = cmd;
+            }
+        }
+        return bestMatch || inputWord;
+    }
+
     function handleKeyPress(event) {
         if (event.key === 'Enter') {
             sendMessage();
@@ -149,7 +182,22 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function processCommand(cmd) {
+    function processCommand(rawCmd) {
+        // Break the input down to look at the first word (the action keyword)
+        const tokens = rawCmd.split(' ');
+        const firstWord = tokens[0];
+        
+        // List of main actions the bot knows
+        const baseCommands = ['help', 'time', 'quote', 'calc', 'todo'];
+        
+        // Find the closest real word if there's a typo!
+        const correctedKeyword = getClosestCommand(firstWord, baseCommands);
+        
+        // Rebuild the command with the corrected first word
+        tokens[0] = correctedKeyword;
+        const cmd = tokens.join(' ');
+
+        // HELP COMMAND
         if (cmd === 'help') {
             return `Here are the things you can ask me to do:<br>
                     • <b>time</b> - Show current time and date<br>
@@ -160,15 +208,18 @@
                     • <b>todo clear</b> - Erase your checklist`;
         }
         
+        // TIME COMMAND
         if (cmd === 'time') {
             return `Current local time is: <b>${new Date().toLocaleString()}</b>`;
         }
 
+        // QUOTE COMMAND
         if (cmd === 'quote') {
             const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
             return `<i>"${randomQuote}"</i>`;
         }
 
+        // CALCULATOR COMMAND
         if (cmd.startsWith('calc ')) {
             const mathExpression = cmd.substring(5);
             try {
@@ -179,17 +230,23 @@
             }
         }
 
+        // TODO COMMANDS
         if (cmd.startsWith('todo ')) {
-            const action = cmd.substring(5);
+            const actionPart = cmd.substring(5);
             
-            if (action.startsWith('add ')) {
-                const task = action.substring(4);
-                if(task.trim() === "") return "Please specify a task to add.";
+            // Check sub-actions for todo (add, list, clear) with typo protection
+            const subTokens = actionPart.split(' ');
+            const subAction = subTokens[0];
+            const correctedSub = getClosestCommand(subAction, ['add', 'list', 'clear']);
+            
+            if (correctedSub === 'add') {
+                const task = actionPart.substring(subAction.length).trim();
+                if(task === "") return "Please specify a task to add.";
                 todos.push(task);
                 return `✅ Added <b>"${task}"</b> to your list. Total items: ${todos.length}`;
             }
             
-            if (action === 'list') {
+            if (correctedSub === 'list') {
                 if (todos.length === 0) return "📝 Your to-do list is empty!";
                 let listHtml = "<b>Your To-Do List:</b><br>";
                 todos.forEach((item, index) => {
@@ -198,7 +255,7 @@
                 return listHtml;
             }
 
-            if (action === 'clear') {
+            if (correctedSub === 'clear') {
                 todos = [];
                 return "🗑️ Your checklist has been completely cleared!";
             }
