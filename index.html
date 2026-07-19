@@ -452,9 +452,10 @@
             if (correctedSub === 'clear') { todos = []; return "🗑️ Checklist wiped."; }
         }
 
-        // --- GENERAL CHAT OVERLAY ENGINE WITH OPENAI METHOD PATH ---
+        // --- GENERAL CHAT OVERLAY ENGINE WITH CUSTOM SYSTEM INSTRUCTION ---
         try {
-            const aiResponse = await fetch(`https://text.pollinations.ai/openai/${encodeURIComponent(originalText)}`);
+            const systemInstruction = "You are Nexus AI, a sleek and highly responsive system dashboard assistant. Keep your responses direct and concise.";
+            const aiResponse = await fetch(`https://text.pollinations.ai/openai/${encodeURIComponent(originalText)}?system=${encodeURIComponent(systemInstruction)}`);
             if(!aiResponse.ok) throw new Error();
             let aiText = await aiResponse.text();
             return aiText.replace(/\n/g, "<br>");
