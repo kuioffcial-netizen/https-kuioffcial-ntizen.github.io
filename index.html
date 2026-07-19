@@ -2,43 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nexus AI Portal</title>
+    <title>Royal AI Portal</title>
     <style>
-        :root { --bg: #0a0a0e; --text: #f1f5f9; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .chat-box { max-width: 600px; margin: auto; border: 1px solid #333; padding: 20px; border-radius: 10px; height: 400px; overflow-y: auto; background: #111; }
-        .msg { margin-bottom: 15px; padding: 10px; border-radius: 8px; }
-        .user { background: #4facfe; text-align: right; }
-        .bot { background: #222; }
-        .input-area { max-width: 600px; margin: 10px auto; display: flex; gap: 10px; }
-        input { flex: 1; padding: 10px; }
+        :root { --bg: #0f172a; --bot: #1e293b; --user: #3b82f6; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        
+        /* Login Screen */
+        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        #login-screen input { padding: 12px; margin: 10px; border-radius: 8px; border: none; width: 250px; }
+        
+        /* Chat UI */
+        #chat-ui { display: none; max-width: 600px; margin: 20px auto; }
+        .chat-box { border: 1px solid #334155; padding: 20px; border-radius: 12px; height: 400px; overflow-y: auto; background: #0f172a; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 15px; padding: 12px; border-radius: 15px; max-width: 80%; }
+        .user { background: var(--user); align-self: flex-end; }
+        .bot { background: var(--bot); align-self: flex-start; }
+        .input-area { margin-top: 20px; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; }
+        button { padding: 10px 20px; border-radius: 8px; border: none; background: var(--user); color: white; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="chat-box" id="chat">
-        <div class="msg bot">Nexus AI Online (No-Key Mode). Ask me anything!</div>
+
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <h1>Welcome to Royal AI</h1>
+        <input id="userName" placeholder="Enter your name to begin...">
+        <button onclick="startChat()">Enter Portal</button>
     </div>
-    <div class="input-area">
-        <input id="in" placeholder="Ask anything...">
-        <button onclick="send()">Send</button>
+
+    <!-- Chat UI -->
+    <div id="chat-ui">
+        <h2 id="welcome-header"></h2>
+        <div class="chat-box" id="chat"></div>
+        <div class="input-area">
+            <input id="in" placeholder="Ask Royal AI anything...">
+            <button onclick="send()">Send</button>
+        </div>
     </div>
 
     <script>
+        let userName = "";
+
+        function startChat() {
+            userName = document.getElementById('userName').value;
+            if (!userName) return alert("Please enter your name first.");
+            
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('chat-ui').style.display = 'block';
+            document.getElementById('welcome-header').innerText = `Greetings, ${userName}. Royal AI is ready.`;
+            document.getElementById('chat').innerHTML = `<div class="msg bot">Hello ${userName}, I am Royal AI. How may I serve you today?</div>`;
+        }
+
         async function send() {
             const input = document.getElementById('in');
             const chat = document.getElementById('chat');
             const val = input.value;
-            
+            if (!val) return;
+
             chat.innerHTML += `<div class="msg user">${val}</div>`;
             input.value = '';
 
             try {
-                // Using a public-gateway to reach open-source models
+                // Using a reliable gateway
                 const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(val)}?model=mistral`);
                 const reply = await res.text();
                 chat.innerHTML += `<div class="msg bot">${reply}</div>`;
+                chat.scrollTop = chat.scrollHeight;
             } catch (e) {
-                chat.innerHTML += `<div class="msg bot">Connection error. Please try again.</div>`;
+                chat.innerHTML += `<div class="msg bot">Royal AI is currently resting. Please try again.</div>`;
             }
         }
     </script>
