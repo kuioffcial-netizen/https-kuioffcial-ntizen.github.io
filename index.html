@@ -3,132 +3,324 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Personal Assistant</title>
+    <title>Nexus AI Portal</title>
     <style>
+        :root {
+            --bg-color: #0a0a0e;
+            --panel-bg: rgba(20, 20, 28, 0.75);
+            --accent-glow: #00f2fe;
+            --accent-purple: #4facfe;
+            --text-main: #f1f5f9;
+            --border-color: rgba(0, 242, 254, 0.2);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121214;
-            color: #e2e8f0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at center, #1a1b26 0%, var(--bg-color) 100%);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
         }
-        .container {
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: var(--accent-glow);
+            filter: blur(150px);
+            opacity: 0.15;
+            top: 20%;
+            left: 25%;
+            animation: floatGlow 8s infinite alternate ease-in-out;
+            z-index: 0;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 30px) scale(1.2); }
+        }
+
+        .portal-card {
             width: 100%;
-            max-width: 600px;
-            background: #1a1a1e;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            max-width: 480px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 242, 254, 0.05);
+            padding: 35px;
+            box-sizing: border-box;
+            z-index: 10;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #loginScreen {
             display: flex;
             flex-direction: column;
-            height: 80vh;
-            overflow: hidden;
-            border: 1px solid #2d2d34;
-        }
-        .header {
-            background: #252529;
-            padding: 15px 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-bottom: 1px solid #2d2d34;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
+            text-align: center;
+            transform: scale(1);
+            opacity: 1;
         }
-        .chat-box {
+
+        .avatar-glow {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-glow));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.4);
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(0, 242, 254, 0.6); }
+            100% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); }
+        }
+
+        .portal-card h2 {
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .custom-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        .custom-input:focus {
+            border-color: var(--accent-glow);
+            background: rgba(0, 242, 254, 0.03);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+        }
+
+        .action-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-glow));
+            color: #0f172a;
+            border: none;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
+        }
+
+        #assistantScreen {
+            max-width: 650px;
+            height: 80vh;
+            display: none;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .dash-header {
+            padding: 20px 25px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .chat-container {
             flex: 1;
-            padding: 20px;
+            padding: 25px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
-        .message {
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .msg {
             max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 8px;
-            line-height: 1.4;
+            padding: 12px 18px;
+            border-radius: 16px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            animation: msgPop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
         }
-        .user-msg {
-            background: #3b82f6;
+
+        @keyframes msgPop {
+            from { opacity: 0; transform: translateY(10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .msg.user {
+            background: linear-gradient(135deg, var(--accent-purple), #2563eb);
             color: white;
             align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
-        .bot-msg {
-            background: #2d2d34;
+
+        .msg.bot {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             color: #e2e8f0;
             align-self: flex-start;
+            border-bottom-left-radius: 4px;
         }
-        .input-area {
+
+        .msg-input-area {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--border-color);
             display: flex;
-            padding: 15px;
-            background: #1a1a1e;
-            border-top: 1px solid #2d2d34;
+            gap: 12px;
         }
-        input {
-            flex: 1;
-            background: #252529;
-            border: 1px solid #3a3a42;
-            padding: 12px;
-            color: white;
-            border-radius: 6px;
-            font-size: 1rem;
-            outline: none;
+
+        .msg-input-area .custom-input {
+            border-radius: 14px;
         }
-        input:focus {
-            border-color: #3b82f6;
-        }
-        button {
-            background: #3b82f6;
-            color: white;
+
+        .send-icon-btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-glow));
             border: none;
-            padding: 0 20px;
-            margin-left: 10px;
-            border-radius: 6px;
+            width: 50px;
+            border-radius: 14px;
             cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
         }
-        button:hover {
-            background: #2563eb;
+
+        .send-icon-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <span>🤖 Personal Assistant Bot</span>
+    <div class="portal-card" id="loginScreen">
+        <div class="avatar-glow">👑</div>
+        <h2>Welcome to Nexus AI</h2>
+        <div class="subtitle">Enter your details to initialize connection</div>
+        
+        <div class="input-group">
+            <label>Master Username</label>
+            <input type="text" id="usernameInput" class="custom-input" placeholder="Type your name..." autocomplete="off">
+        </div>
+        
+        <button class="action-btn" onclick="handleLogin()">AUTHENTICATE</button>
     </div>
-    <div class="chat-box" id="chatBox">
-        <div class="message bot-msg">Hello! I'm your local browser assistant. Type <b>help</b> to see what I can do!</div>
+
+    <div class="portal-card" id="assistantScreen">
+        <div class="dash-header">
+            <div class="user-profile">
+                <div class="user-status-dot"></div>
+                <span style="font-weight: 600;" id="displayUser">Admin</span>
+            </div>
+            <span style="font-size: 0.8rem; color: #64748b; letter-spacing: 0.5px;">SYSTEM ACTIVE</span>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="msg bot">Initialization complete. I am deployed online. Type <b>help</b> to review instructions!</div>
+        </div>
+        
+        <div class="msg-input-area">
+            <input type="text" id="dashboardInput" class="custom-input" placeholder="Transmit a request..." onkeypress="handleDashKey(event)">
+            <button class="send-icon-btn" onclick="processDashboardMessage()">⚡</button>
+        </div>
     </div>
-    <div class="input-area">
-        <input type="text" id="userInput" placeholder="Type a command here..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()">Send</button>
-    </div>
-</div>
 
 <script>
+    let currentUserName = "User";
+    let todos = [];
     const quotes = [
         "The best way to predict the future is to create it.",
         "Simplicity is the soul of efficiency.",
-        "Make it work, make it right, make it fast.",
         "Your focus determines your reality."
     ];
-    let todos = [];
 
-    // Smart helper that catches spelling mistakes (Levenshtein Distance logic)
     function getClosestCommand(inputWord, validCommands) {
+        if (!inputWord) return '';
         let bestMatch = null;
-        let minDistance = 3; // Allows up to 2 typos
+        let minDistance = 3; 
 
         for (const cmd of validCommands) {
-            if (inputWord === cmd) return cmd; // Perfect match
+            if (inputWord === cmd) return cmd;
             
-            // Calculate differences between words
             const track = Array(cmd.length + 1).fill(null).map(() => Array(inputWord.length + 1).fill(null));
             for (let i = 0; i <= cmd.length; i += 1) track[i][0] = i;
             for (let j = 0; j <= inputWord.length; j += 1) track[0][j] = j;
@@ -143,7 +335,6 @@
                     );
                 }
             }
-            
             const distance = track[cmd.length][inputWord.length];
             if (distance < minDistance) {
                 minDistance = distance;
@@ -153,117 +344,136 @@
         return bestMatch || inputWord;
     }
 
-    function handleKeyPress(event) {
-        if (event.key === 'Enter') {
-            sendMessage();
+    function handleLogin() {
+        const nameInput = document.getElementById('usernameInput').value.trim();
+        if(nameInput !== "") {
+            currentUserName = nameInput;
         }
+        document.getElementById('displayUser').innerText = currentUserName;
+
+        const loginCard = document.getElementById('loginScreen');
+        const dashCard = document.getElementById('assistantScreen');
+
+        loginCard.style.opacity = "0";
+        loginCard.style.transform = "scale(0.9)";
+        
+        setTimeout(() => {
+            loginCard.style.display = "none";
+            dashCard.style.display = "flex";
+            
+            setTimeout(() => {
+                dashCard.style.opacity = "1";
+                dashCard.style.transform = "translateY(0)";
+            }, 50);
+        }, 500);
     }
 
-    function sendMessage() {
-        const inputEl = document.getElementById('userInput');
-        const query = inputEl.value.trim();
-        if (!query) return;
+    function handleDashKey(e) {
+        if(e.key === 'Enter') processDashboardMessage();
+    }
 
-        addMessage(query, 'user-msg');
+    function processDashboardMessage() {
+        const inputEl = document.getElementById('dashboardInput');
+        const val = inputEl.value.trim();
+        if(!val) return;
+
+        addMsg(val, 'user');
         inputEl.value = '';
 
-        setTimeout(() => {
-            const response = processCommand(query.toLowerCase());
-            addMessage(response, 'bot-msg');
+        setTimeout(async () => {
+            const reply = await handleBotLogic(val.toLowerCase(), val);
+            addMsg(reply, 'bot');
         }, 300);
     }
 
-    function addMessage(text, className) {
-        const chatBox = document.getElementById('chatBox');
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${className}`;
-        msgDiv.innerHTML = text;
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
+    function addMsg(text, sender) {
+        const box = document.getElementById('chatContainer');
+        const div = document.createElement('div');
+        div.className = `msg ${sender}`;
+        div.innerHTML = text;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
     }
 
-    function processCommand(rawCmd) {
-        // Break the input down to look at the first word (the action keyword)
-        const tokens = rawCmd.split(' ');
+    async function handleBotLogic(cleanCmd, originalText) {
+        const tokens = cleanCmd.split(' ');
         const firstWord = tokens[0];
         
-        // List of main actions the bot knows
-        const baseCommands = ['help', 'time', 'quote', 'calc', 'todo'];
-        
-        // Find the closest real word if there's a typo!
+        const baseCommands = ['help', 'time', 'quote', 'calc', 'todo', 'weather'];
         const correctedKeyword = getClosestCommand(firstWord, baseCommands);
-        
-        // Rebuild the command with the corrected first word
-        tokens[0] = correctedKeyword;
-        const cmd = tokens.join(' ');
 
-        // HELP COMMAND
-        if (cmd === 'help') {
-            return `Here are the things you can ask me to do:<br>
-                    • <b>time</b> - Show current time and date<br>
-                    • <b>quote</b> - Get a quick motivational quote<br>
-                    • <b>calc [math]</b> - e.g., <i>calc 12 * 5</i> or <i>calc 100 / 4</i><br>
-                    • <b>todo add [task]</b> - Add an item to your checklist<br>
-                    • <b>todo list</b> - View your current checklist<br>
-                    • <b>todo clear</b> - Erase your checklist`;
-        }
-        
-        // TIME COMMAND
-        if (cmd === 'time') {
-            return `Current local time is: <b>${new Date().toLocaleString()}</b>`;
+        if (correctedKeyword === 'help') {
+            return `Hello <b>${currentUserName}</b>, here are your commands:<br>
+                    • <b>time</b> - System local clock<br>
+                    • <b>quote</b> - Insight line generator<br>
+                    • <b>calc [math]</b> - e.g., <i>calc 50 * 2</i><br>
+                    • <b>todo add/list/clear</b> - Task storage<br>
+                    • <b>weather [city]</b> - Pull live weather data from the web!`;
         }
 
-        // QUOTE COMMAND
-        if (cmd === 'quote') {
-            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-            return `<i>"${randomQuote}"</i>`;
+        if (correctedKeyword === 'time') {
+            return `Current session time: <b>${new Date().toLocaleString()}</b>`;
         }
 
-        // CALCULATOR COMMAND
-        if (cmd.startsWith('calc ')) {
-            const mathExpression = cmd.substring(5);
+        if (correctedKeyword === 'quote') {
+            return `<i>"${quotes[Math.floor(Math.random() * quotes.length)]}"</i>`;
+        }
+
+        if (correctedKeyword === 'calc') {
+            const expr = originalText.substring(tokens[0].length).trim();
+            if(!expr) return "Provide an equation. Example: <code>calc 25 + 75</code>";
             try {
-                const result = new Function(`return ${mathExpression}`)();
-                return `Result: <b>${result}</b>`;
-            } catch (e) {
-                return "❌ Oops, that math expression looks invalid. Try something like <code>calc 5 * 50</code>.";
+                const res = new Function(`return ${expr}`)();
+                return `Calculation outcome: <b>${res}</b>`;
+            } catch(e) {
+                return "❌ Mathematical expression error.";
             }
         }
 
-        // TODO COMMANDS
-        if (cmd.startsWith('todo ')) {
-            const actionPart = cmd.substring(5);
+        if (correctedKeyword === 'weather') {
+            const city = originalText.substring(tokens[0].length).trim();
+            if(!city) return "Please enter a city name! Example: <code>weather Paris</code>";
             
-            // Check sub-actions for todo (add, list, clear) with typo protection
-            const subTokens = actionPart.split(' ');
-            const subAction = subTokens[0];
-            const correctedSub = getClosestCommand(subAction, ['add', 'list', 'clear']);
-            
-            if (correctedSub === 'add') {
-                const task = actionPart.substring(subAction.length).trim();
-                if(task === "") return "Please specify a task to add.";
-                todos.push(task);
-                return `✅ Added <b>"${task}"</b> to your list. Total items: ${todos.length}`;
+            try {
+                const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
+                if(!response.ok) throw new Error();
+                const data = await response.json();
+                
+                const currentCondition = data.current_condition[0];
+                const tempC = currentCondition.temp_C;
+                const desc = currentCondition.weatherDesc[0].value;
+                
+                return `🌍 Live web data for <b>${city}</b>:<br>
+                        • Temperature: <b>${tempC}°C</b><br>
+                        • Conditions: <b>${desc}</b>`;
+            } catch(e) {
+                return `🌤️ *Couldn't contact server for "${city}". Formatted fallback:* Sky looks beautiful over there!`;
             }
-            
-            if (correctedSub === 'list') {
-                if (todos.length === 0) return "📝 Your to-do list is empty!";
-                let listHtml = "<b>Your To-Do List:</b><br>";
-                todos.forEach((item, index) => {
-                    listHtml += `${index + 1}. ${item}<br>`;
-                });
-                return listHtml;
-            }
+        }
 
+        if (correctedKeyword === 'todo') {
+            const actionPart = cleanCmd.substring(firstWord.length).trim();
+            const subTokens = actionPart.split(' ');
+            const correctedSub = getClosestCommand(subTokens[0], ['add', 'list', 'clear']);
+
+            if (correctedSub === 'add') {
+                const task = originalText.substring(firstWord.length + subTokens[0].length + 1).trim();
+                if(!task) return "Specify a task description.";
+                todos.push(task);
+                return `✅ Logged task: "${task}"`;
+            }
+            if (correctedSub === 'list') {
+                if(todos.length === 0) return "Checklist clear.";
+                return `<b>Tasks:</b><br>` + todos.map((t, i) => `${i+1}. ${t}`).join('<br>');
+            }
             if (correctedSub === 'clear') {
                 todos = [];
-                return "🗑️ Your checklist has been completely cleared!";
+                return "🗑️ Task directory cleared.";
             }
         }
 
-        return "🤔 I didn't quite catch that command. Type <b>help</b> to see a list of things I understand!";
+        return "🤔 Request unrecognized. Transmit <b>help</b> for syntax guidance.";
     }
 </script>
-
 </body>
 </html>
