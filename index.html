@@ -147,11 +147,14 @@
         input.value = '';
         
         try {
-            const res = await fetch(`https://text.pollinations.ai/openai/${encodeURIComponent(val)}?system=${encodeURIComponent("You are Nexus AI, a sleek system dashboard assistant.")}`);
+            // Using the updated /ai/ path for better stability
+            const res = await fetch(`https://text.pollinations.ai/ai/${encodeURIComponent(val)}?model=openai&system=${encodeURIComponent("You are Nexus AI, a sleek system dashboard assistant.")}`);
             const reply = await res.text();
             addMsg(reply.replace(/\n/g, "<br>"), 'bot');
             localStorage.setItem('nexusChatHistory', document.getElementById('chatContainer').innerHTML);
-        } catch(e) { addMsg("Connection error.", "bot"); }
+        } catch(e) { 
+            addMsg("System busy, please try again in a moment.", "bot"); 
+        }
     }
 
     function addMsg(text, sender) {
