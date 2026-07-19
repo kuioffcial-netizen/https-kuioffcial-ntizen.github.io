@@ -454,7 +454,7 @@
 
         // --- GENERAL CHAT OVERLAY ENGINE WITH OPENAI METHOD PATH ---
         try {
-            const aiResponse = await fetch(`https://text.pollinations.ai/openai?prompt=${encodeURIComponent(originalText)}`);
+            const aiResponse = await fetch(`https://text.pollinations.ai/openai/${encodeURIComponent(originalText)}`);
             if(!aiResponse.ok) throw new Error();
             let aiText = await aiResponse.text();
             return aiText.replace(/\n/g, "<br>");
