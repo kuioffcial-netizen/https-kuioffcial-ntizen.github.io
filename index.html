@@ -4,54 +4,53 @@
     <meta charset="UTF-8">
     <title>Royal AI Portal</title>
     <style>
-        :root { --bg: #0f172a; --bot: #1e293b; --user: #3b82f6; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        :root { --bg: #050505; --panel: #111; --accent: #d4af37; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
+        /* Smooth Fade-in Animation */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+
         /* Login Screen */
-        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        #login-screen input { padding: 12px; margin: 10px; border-radius: 8px; border: none; width: 250px; }
+        #login-screen { text-align: center; }
+        #userName { padding: 10px; width: 220px; border-radius: 6px; border: 1px solid #333; background: #222; color: white; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }
         
         /* Chat UI */
-        #chat-ui { display: none; max-width: 600px; margin: 20px auto; }
-        .chat-box { border: 1px solid #334155; padding: 20px; border-radius: 12px; height: 400px; overflow-y: auto; background: #0f172a; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 15px; padding: 12px; border-radius: 15px; max-width: 80%; }
-        .user { background: var(--user); align-self: flex-end; }
-        .bot { background: var(--bot); align-self: flex-start; }
-        .input-area { margin-top: 20px; display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; }
-        button { padding: 10px 20px; border-radius: 8px; border: none; background: var(--user); color: white; cursor: pointer; }
+        #chat-ui { display: none; width: 90%; max-width: 500px; }
+        .chat-box { border: 1px solid #222; padding: 15px; border-radius: 10px; height: 350px; overflow-y: auto; background: var(--panel); margin-bottom: 10px; }
+        .msg { margin-bottom: 12px; padding: 10px; border-radius: 8px; font-size: 0.9em; line-height: 1.4; }
+        .user { background: #2563eb; align-self: flex-end; color: white; text-align: right; }
+        .bot { background: #1f2937; color: #e2e8f0; }
+        .input-area { display: flex; gap: 8px; }
+        #in { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #222; color: white; }
+        button { padding: 8px 16px; border-radius: 6px; border: none; background: var(--accent); color: black; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- Login Screen -->
-    <div id="login-screen">
-        <h1>Welcome to Royal AI</h1>
-        <input id="userName" placeholder="Enter your name to begin...">
+    <div id="login-screen" class="fade-in">
+        <h1 style="color: var(--accent);">Royal AI</h1>
+        <input id="userName" placeholder="Enter your name...">
         <button onclick="startChat()">Enter Portal</button>
     </div>
 
-    <!-- Chat UI -->
-    <div id="chat-ui">
-        <h2 id="welcome-header"></h2>
+    <div id="chat-ui" class="fade-in">
+        <h2 id="welcome-header" style="font-size: 1.2em; margin-bottom: 10px;"></h2>
         <div class="chat-box" id="chat"></div>
         <div class="input-area">
-            <input id="in" placeholder="Ask Royal AI anything...">
+            <input id="in" placeholder="Ask Royal AI...">
             <button onclick="send()">Send</button>
         </div>
     </div>
 
     <script>
-        let userName = "";
-
         function startChat() {
-            userName = document.getElementById('userName').value;
-            if (!userName) return alert("Please enter your name first.");
-            
+            const name = document.getElementById('userName').value;
+            if (!name) return alert("Please enter your name!");
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('chat-ui').style.display = 'block';
-            document.getElementById('welcome-header').innerText = `Greetings, ${userName}. Royal AI is ready.`;
-            document.getElementById('chat').innerHTML = `<div class="msg bot">Hello ${userName}, I am Royal AI. How may I serve you today?</div>`;
+            document.getElementById('welcome-header').innerText = `Welcome, ${name}`;
+            document.getElementById('chat').innerHTML = `<div class="msg bot">Royal AI initialized. How can I assist you, ${name}?</div>`;
         }
 
         async function send() {
@@ -59,20 +58,20 @@
             const chat = document.getElementById('chat');
             const val = input.value;
             if (!val) return;
-
+            
             chat.innerHTML += `<div class="msg user">${val}</div>`;
             input.value = '';
-
+            
             try {
-                // Using a reliable gateway
                 const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(val)}?model=mistral`);
                 const reply = await res.text();
                 chat.innerHTML += `<div class="msg bot">${reply}</div>`;
                 chat.scrollTop = chat.scrollHeight;
-            } catch (e) {
-                chat.innerHTML += `<div class="msg bot">Royal AI is currently resting. Please try again.</div>`;
+            } catch (e) { 
+                chat.innerHTML += `<div class="msg bot">Royal AI is currently resting. Please try again.</div>`; 
             }
         }
     </script>
 </body>
 </html>
+
